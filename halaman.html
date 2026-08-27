@@ -1154,12 +1154,18 @@
         // ================== LOGIKA LOGIN ==================
         const authArea = document.getElementById("authArea");
 
-        function isLoggedIn() {
-            return localStorage.getItem("nusaKarsaLoggedIn") === "true";
+        let loggedIn = false;
+
+        async function isLoggedIn() {
+            const response = await fetch("api/session.php");
+            const result = await response.json();
+            loggedIn = result.authenticated === true;
+            return loggedIn;
         }
 
-        function renderAuthArea() {
-            if (isLoggedIn()) {
+        async function renderAuthArea() {
+            const authenticated = await isLoggedIn();
+            if (authenticated) {
                 authArea.innerHTML = `
                     <div class="admin">
                         <div class="avatar"><i class="fa-solid fa-user"></i></div>
@@ -1173,13 +1179,13 @@
                         <i class="fa-solid fa-right-from-bracket"></i> Keluar
                     </button>
                 `;
-                document.getElementById("logoutBtn").addEventListener("click", function() {
-                    localStorage.removeItem("nusaKarsaLoggedIn");
+                document.getElementById("logoutBtn").addEventListener("click", async function() {
+                    await fetch("api/logout.php", { method: "POST" });
                     window.location.reload();
                 });
             } else {
                 authArea.innerHTML = `
-                    <a href="login.html" class="btn-login-top">
+                    <a href="Html/login.html" class="btn-login-top">
                         <i class="fa-solid fa-right-to-bracket"></i> Login
                     </a>
                 `;
@@ -1189,10 +1195,10 @@
 
         // Proteksi elemen yang memerlukan autentikasi
         document.querySelectorAll(".requires-auth").forEach(el => {
-            el.addEventListener("click", function(e) {
-                if (!isLoggedIn()) {
+            el.addEventListener("click", async function(e) {
+                if (!loggedIn) {
                     e.preventDefault();
-                    window.location.href = "login.html?next=" + encodeURIComponent(window.location.href);
+                    window.location.href = "Html/login.html?next=" + encodeURIComponent(window.location.href);
                 }
                 // Jika sudah login, biarkan aksi default berjalan
             });

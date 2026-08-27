@@ -344,19 +344,38 @@
                 </button>
             </form>
 
-            <a href="halaman.html" class="back-link">
+            <a href="../halaman.html" class="back-link">
                 <i class="fa-solid fa-arrow-left" style="margin-right: 6px;"></i> Kembali ke Dashboard
             </a>
         </div>
     </div>
 
     <script>
-        // Tangani submit form (contoh sederhana)
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            e.preventDefault(); // Cegah submit default
-            // Di sini nanti bisa dihubungkan ke backend Java
-            alert('Login berhasil! (Simulasi)');
-            // window.location.href = 'halaman.html';
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const button = this.querySelector('button[type="submit"]');
+            button.disabled = true;
+            button.textContent = 'Memproses...';
+
+            try {
+                const response = await fetch('../api/login.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: document.getElementById('username').value,
+                        password: document.getElementById('password').value
+                    })
+                });
+                const result = await response.json();
+                if (!response.ok || !result.success) throw new Error(result.message || 'Login gagal.');
+
+                const next = new URLSearchParams(window.location.search).get('next');
+                window.location.href = next || '../halaman.html';
+            } catch (error) {
+                alert(error.message || 'Tidak dapat menghubungi server.');
+                button.disabled = false;
+                button.innerHTML = 'Masuk <i class="fa-solid fa-arrow-right" style="margin-left: 8px;"></i>';
+            }
         });
     </script>
 </body>
