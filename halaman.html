@@ -848,6 +848,10 @@
                 <i class="fa-solid fa-house"></i>
                 <span>Dashboard</span>
             </a>
+            <a href="Html/login.html" class="nav-item" id="accountLink">
+                <i class="fa-regular fa-user"></i>
+                <span id="accountLinkText">Login Admin</span>
+            </a>
             <a href="#" class="nav-item">
                 <i class="fa-solid fa-code-branch"></i>
                 <span>Cabang</span>
@@ -1153,6 +1157,8 @@
 
         // ================== LOGIKA LOGIN ==================
         const authArea = document.getElementById("authArea");
+        const accountLink = document.getElementById("accountLink");
+        const accountLinkText = document.getElementById("accountLinkText");
 
         let loggedIn = false;
 
@@ -1166,6 +1172,8 @@
         async function renderAuthArea() {
             const authenticated = await isLoggedIn();
             if (authenticated) {
+                accountLink.href = "#";
+                accountLinkText.textContent = "Akun Saya";
                 authArea.innerHTML = `
                     <div class="admin">
                         <div class="avatar"><i class="fa-solid fa-user"></i></div>
@@ -1184,6 +1192,8 @@
                     window.location.reload();
                 });
             } else {
+                accountLink.href = "Html/login.html?next=" + encodeURIComponent(window.location.href);
+                accountLinkText.textContent = "Login Admin";
                 authArea.innerHTML = `
                     <a href="Html/login.html" class="btn-login-top">
                         <i class="fa-solid fa-right-to-bracket"></i> Login
@@ -1192,6 +1202,14 @@
             }
         }
         renderAuthArea();
+
+        // Menu Akun membawa pengguna yang belum login ke halaman login.
+        accountLink.addEventListener("click", function(event) {
+            if (loggedIn) {
+                event.preventDefault();
+                alert("Anda sedang login sebagai Admin Pusat.");
+            }
+        });
 
         // Proteksi elemen yang memerlukan autentikasi
         document.querySelectorAll(".requires-auth").forEach(el => {
