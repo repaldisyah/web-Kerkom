@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loading Screen - Nusa Karsa Event</title>
+    
+    <!-- Memanggil Tailwind CSS via CDN untuk pengujian cepat di VSCode -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Custom CSS untuk Animasi Sapuan Warna -->
+    <style>
+        @keyframes fillLeftToRight {
+            0% {
+                /* Memotong gambar 100% dari kanan ke kiri (Warna disembunyikan) */
+                clip-path: inset(0 100% 0 0);
+            }
+            100% {
+                /* Memotong gambar 0% (Warna tampil 100% penuh) */
+                clip-path: inset(0 0 0 0);
+            }
+        }
+
+        .animate-logo-fill {
+            animation: fillLeftToRight 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Container Loading Screen -->
+    <div id="loading-screen" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white transition-opacity duration-500">
+        
+        <!-- Wrapper Logo -->
+        <div class="relative w-80 h-64 flex items-center justify-center">
+            
+            <!-- LAYER 1 (BAWAH): Hitam Putih & Redup -->
+            <!-- Ganti 'logo.jpg' dengan nama file logo NK aslimu yang ada di folder VSCode -->
+            <img src="assets/logo3.0.png" 
+                 alt="NK Logo BW" 
+                 class="absolute inset-0 w-full h-full object-contain grayscale opacity-25">
+
+            <!-- LAYER 2 (ATAS): Berwarna Penuh dengan Animasi CSS -->
+            <!-- Gambar yang dipanggil sama persis dengan yang di atas -->
+            <img src="assets/logo3.0.png" 
+                 alt="NK Logo Color" 
+                 class="absolute inset-0 w-full h-full object-contain animate-logo-fill">
+            
+        </div>
+
+        <!-- Teks Loading -->
+        <p class="mt-2 text-[#4F37A6] text-sm font-bold tracking-widest uppercase animate-pulse">
+            Memuat Sistem...
+        </p>
+    </div>
+
+    <!-- Konten Dashboard Utamamu Letakkan di Sini -->
+    <div class="p-10">
+        <h1 class="text-2xl font-bold">Ini halaman dashboard setelah loading selesai.</h1>
+    </div>
+
+    <!-- Script untuk menghilangkan loading screen -->
+    <script>
+        window.addEventListener('load', function() {
+            const loader = document.getElementById('loading-screen');
+            
+            // Memberi jeda 2 detik agar animasi warnanya sempat terlihat jelas
+            setTimeout(() => {
+                loader.classList.add('opacity-0', 'pointer-events-none');
+                
+                // Menghapus elemen dari layar setelah transisi fade-out selesai
+                setTimeout(() => {
+                    loader.style.display = 'none';
+                }, 500);
+            }, 2000); 
+        });
+    </script>
+</body>
+</html>
