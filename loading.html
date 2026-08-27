@@ -5,75 +5,163 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Loading Screen - Nusa Karsa Event</title>
     
-    <!-- Memanggil Tailwind CSS via CDN untuk pengujian cepat di VSCode -->
-    <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- Custom CSS untuk Animasi Sapuan Warna -->
     <style>
+        :root {
+            --navy: #102d4d;
+            --blue: #246b95;
+            --cyan: #28b8c9;
+            --gold: #c9962b;
+            --bg: #f5f7fb;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            overflow: hidden;
+            color: var(--navy);
+            font-family: "Poppins", "Segoe UI", sans-serif;
+            background:
+                radial-gradient(circle at 18% 15%, rgba(40, 184, 201, .18), transparent 28rem),
+                radial-gradient(circle at 86% 88%, rgba(201, 150, 43, .14), transparent 24rem),
+                var(--bg);
+        }
+
+        .loading-screen {
+            width: min(100%, 30rem);
+            padding: 2rem;
+            text-align: center;
+            animation: appear .7s ease both;
+        }
+
+        .logo-wrap {
+            position: relative;
+            width: min(70vw, 18rem);
+            aspect-ratio: 1;
+            margin: 0 auto 1.25rem;
+        }
+
+        .logo-wrap img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 14px 20px rgba(16, 45, 77, .16));
+        }
+
+        .logo-muted { opacity: .2; filter: grayscale(1) drop-shadow(0 14px 20px rgba(16, 45, 77, .12)) !important; }
+
         @keyframes fillLeftToRight {
             0% {
-                /* Memotong gambar 100% dari kanan ke kiri (Warna disembunyikan) */
                 clip-path: inset(0 100% 0 0);
             }
             100% {
-                /* Memotong gambar 0% (Warna tampil 100% penuh) */
                 clip-path: inset(0 0 0 0);
             }
         }
 
         .animate-logo-fill {
-            animation: fillLeftToRight 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+            animation: fillLeftToRight 1.7s cubic-bezier(0.4, 0, 0.2, 1) both;
+        }
+
+        .loading-title {
+            margin: 0;
+            font-size: clamp(1.15rem, 4vw, 1.45rem);
+            font-weight: 700;
+        }
+
+        .loading-text {
+            margin: .45rem 0 1.4rem;
+            color: var(--blue);
+            font-size: .85rem;
+            letter-spacing: .16em;
+            text-transform: uppercase;
+            animation: pulse 1.4s ease-in-out infinite;
+        }
+
+        .progress {
+            width: min(100%, 18rem);
+            height: .3rem;
+            margin: 0 auto;
+            overflow: hidden;
+            border-radius: 99px;
+            background: rgba(16, 45, 77, .12);
+        }
+
+        .progress span {
+            display: block;
+            width: 0;
+            height: 100%;
+            border-radius: inherit;
+            background: linear-gradient(90deg, var(--navy), var(--cyan), var(--gold));
+            animation: progress 1.9s cubic-bezier(.4, 0, .2, 1) forwards;
+        }
+
+        .skip-button {
+            margin-top: 1.3rem;
+            border: 0;
+            padding: .55rem .9rem;
+            color: var(--blue);
+            background: transparent;
+            cursor: pointer;
+            font: inherit;
+            font-size: .78rem;
+            opacity: .75;
+        }
+
+        .skip-button:hover, .skip-button:focus-visible { opacity: 1; text-decoration: underline; }
+
+        @keyframes appear { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse { 50% { opacity: .45; } }
+        @keyframes progress { to { width: 100%; } }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
         }
     </style>
 </head>
 <body>
-
-    <!-- Container Loading Screen -->
-    <div id="loading-screen" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white transition-opacity duration-500">
-        
-        <!-- Wrapper Logo -->
-        <div class="relative w-80 h-64 flex items-center justify-center">
-            
-            <!-- LAYER 1 (BAWAH): Hitam Putih & Redup -->
-            <!-- Ganti 'logo.jpg' dengan nama file logo NK aslimu yang ada di folder VSCode -->
-            <img src="assets/logo3.0.png" 
-                 alt="NK Logo BW" 
-                 class="absolute inset-0 w-full h-full object-contain grayscale opacity-25">
-
-            <!-- LAYER 2 (ATAS): Berwarna Penuh dengan Animasi CSS -->
-            <!-- Gambar yang dipanggil sama persis dengan yang di atas -->
-            <img src="assets/logo3.0.png" 
-                 alt="NK Logo Color" 
-                 class="absolute inset-0 w-full h-full object-contain animate-logo-fill">
-            
+    <main class="loading-screen" aria-live="polite">
+        <div class="logo-wrap">
+            <img src="assets/logo3.0.png" alt="Logo Nusa Karsa Event" class="logo-muted">
+            <img src="assets/logo3.0.png" alt="" class="animate-logo-fill" aria-hidden="true">
         </div>
+        <h1 class="loading-title">Nusa Karsa Event</h1>
+        <p class="loading-text">Menyiapkan halaman...</p>
+        <div class="progress" role="progressbar" aria-label="Memuat halaman"><span></span></div>
+        <button class="skip-button" id="skipLoading" type="button">Lewati</button>
+    </main>
 
-        <!-- Teks Loading -->
-        <p class="mt-2 text-[#4F37A6] text-sm font-bold tracking-widest uppercase animate-pulse">
-            Memuat Sistem...
-        </p>
-    </div>
-
-    <!-- Konten Dashboard Utamamu Letakkan di Sini -->
-    <div class="p-10">
-        <h1 class="text-2xl font-bold">Ini halaman dashboard setelah loading selesai.</h1>
-    </div>
-
-    <!-- Script untuk menghilangkan loading screen -->
     <script>
-        window.addEventListener('load', function() {
-            const loader = document.getElementById('loading-screen');
-            
-            // Memberi jeda 2 detik agar animasi warnanya sempat terlihat jelas
-            setTimeout(() => {
-                loader.classList.add('opacity-0', 'pointer-events-none');
-                
-                // Menghapus elemen dari layar setelah transisi fade-out selesai
-                setTimeout(() => {
-                    loader.style.display = 'none';
-                }, 500);
-            }, 2000); 
-        });
+        const params = new URLSearchParams(window.location.search);
+        const requestedDestination = params.get('next');
+        const fallbackDestination = 'halaman.html';
+        const destination = requestedDestination && isSafeDestination(requestedDestination)
+            ? requestedDestination
+            : fallbackDestination;
+
+        function isSafeDestination(value) {
+            try {
+                const url = new URL(value, window.location.href);
+                return url.origin === window.location.origin && !/loading\.html$/i.test(url.pathname);
+            } catch (error) {
+                return false;
+            }
+        }
+
+        let redirected = false;
+        function continueToDestination() {
+            if (redirected) return;
+            redirected = true;
+            window.location.replace(destination);
+        }
+
+        document.getElementById('skipLoading').addEventListener('click', continueToDestination);
+        window.setTimeout(continueToDestination, 2000);
     </script>
 </body>
 </html>

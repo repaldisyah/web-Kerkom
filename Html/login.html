@@ -344,7 +344,7 @@
                 </button>
             </form>
 
-            <a href="../halaman.html" class="back-link">
+            <a href="../loading.html?next=halaman.html" class="back-link">
                 <i class="fa-solid fa-arrow-left" style="margin-right: 6px;"></i> Kembali ke Dashboard
             </a>
         </div>
@@ -370,7 +370,8 @@
                 if (!response.ok || !result.success) throw new Error(result.message || 'Login gagal.');
 
                 const next = new URLSearchParams(window.location.search).get('next');
-                window.location.href = next || '../halaman.html';
+                const destination = next || 'halaman.html';
+                window.location.href = '../loading.html?next=' + encodeURIComponent(destination);
             } catch (error) {
                 alert(error.message || 'Tidak dapat menghubungi server.');
                 button.disabled = false;

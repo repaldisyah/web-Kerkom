@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Piutang | Nusa Karsa Event</title>
 
+        <!-- Logo kecil pada tab browser -->
+    <link rel="icon" type="image/png" href="assets/logo2.0.png">
+    <link rel="shortcut icon" href="assets/logo.png">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -948,8 +952,8 @@
                             <i class="fa-solid fa-wallet"></i>
                         </div>
                     </div>
-                    <div class="summary-value">Rp 37.200.000</div>
-                    <div class="summary-sub">dari 18 pelanggan</div>
+                    <div class="summary-value" data-summary="total_receivables">Memuat...</div>
+                    <div class="summary-sub">dari data yang tersedia</div>
                 </article>
 
                 <article class="summary-card unpaid">
@@ -959,8 +963,8 @@
                             <i class="fa-solid fa-hourglass-half"></i>
                         </div>
                     </div>
-                    <div class="summary-value">Rp 22.450.000</div>
-                    <div class="summary-sub">12 pelanggan</div>
+                    <div class="summary-value" data-summary="unpaid">Memuat...</div>
+                    <div class="summary-sub">belum dibayar</div>
                 </article>
 
                 <article class="summary-card near">
@@ -970,8 +974,8 @@
                             <i class="fa-solid fa-triangle-exclamation"></i>
                         </div>
                     </div>
-                    <div class="summary-value">Rp 6.750.000</div>
-                    <div class="summary-sub">4 pelanggan</div>
+                    <div class="summary-value" data-summary="near_due">Memuat...</div>
+                    <div class="summary-sub">mendekati tempo</div>
                 </article>
 
                 <article class="summary-card paid">
@@ -981,8 +985,8 @@
                             <i class="fa-solid fa-check"></i>
                         </div>
                     </div>
-                    <div class="summary-value">Rp 14.750.000</div>
-                    <div class="summary-sub">6 pelanggan</div>
+                    <div class="summary-value" data-summary="paid">Memuat...</div>
+                    <div class="summary-sub">lunas</div>
                 </article>
 
             </section>
@@ -1147,6 +1151,17 @@
         updateClock();
         setInterval(updateClock, 1000);
 
+        document.addEventListener("click", function(event) {
+            const link = event.target.closest("a[href]");
+            if (!link || link.target === "_blank" || link.getAttribute("href") === "#") return;
+
+            const destination = new URL(link.href, window.location.href);
+            if (destination.origin !== window.location.origin || /loading\.html$/i.test(destination.pathname)) return;
+
+            event.preventDefault();
+            window.location.href = "loading.html?next=" + encodeURIComponent(destination.href);
+        });
+
         // Efek aktif pada menu
         document.querySelectorAll(".nav-item").forEach(item => {
             item.addEventListener("click", function() {
@@ -1160,26 +1175,102 @@
         const accountLink = document.getElementById("accountLink");
         const accountLinkText = document.getElementById("accountLinkText");
 
+        function formatCurrency(value) {
+            return new Intl.NumberFormat("id-ID", {
+                style: "currency",
+                currency: "IDR",
+                maximumFractionDigits: 0
+            }).format(Number(value) || 0);
+        }
+
+        function escapeHtml(value) {
+            return String(value ?? "").replace(/[&<>'"]/g, character => ({
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                "'": "&#39;",
+                "\"": "&quot;"
+            }[character]));
+        }
+
+        function clearDashboardData(message) {
+            document.querySelectorAll("[data-summary]").forEach(element => {
+                element.textContent = message;
+            });
+            document.querySelector(".branch-grid").innerHTML = `<p>${escapeHtml(message)}</p>`;
+            document.querySelector("tbody").innerHTML = `<tr><td colspan="8">${escapeHtml(message)}</td></tr>`;
+        }
+
+        function renderDashboardData(data) {
+            Object.entries(data.summary).forEach(([key, value]) => {
+                const element = document.querySelector(`[data-summary="${key}"]`);
+                if (element) element.textContent = formatCurrency(value);
+            });
+
+            document.querySelector(".branch-grid").innerHTML = data.branches.map(branch => `
+                <article class="branch-card">
+                    <div class="branch-top">
+                        <div class="branch-icon palembang"><i class="fa-solid fa-building"></i></div>
+                        <div class="branch-info">
+                            <strong>${escapeHtml(branch.name)}</strong>
+                            <span>${formatCurrency(branch.receivables)}</span>
+                            <small>${Number(branch.customer_count) || 0} pelanggan</small>
+                        </div>
+                    </div>
+                    <div class="progress"><span></span></div>
+                </article>
+            `).join("") || "<p>Tidak ada data cabang.</p>";
+
+            document.querySelector("tbody").innerHTML = data.recent_receivables.map(receivable => `
+                <tr>
+                    <td>${escapeHtml(receivable.customer)}</td>
+                    <td>${escapeHtml(receivable.branch)}</td>
+                    <td>${escapeHtml(receivable.event)}</td>
+                    <td>${escapeHtml(receivable.invoice_date)}</td>
+                    <td class="money">${formatCurrency(receivable.total_amount)}</td>
+                    <td class="money debt-warning">${formatCurrency(receivable.balance)}</td>
+                    <td>${escapeHtml(receivable.due_date)}</td>
+                    <td><span class="status ${escapeHtml(receivable.status)}">${escapeHtml(receivable.status)}</span></td>
+                </tr>
+            `).join("") || "<tr><td colspan=\"8\">Belum ada data piutang.</td></tr>";
+        }
+
+        async function loadDashboardData() {
+            clearDashboardData("Memuat...");
+            try {
+                const response = await fetch("api/dashboard.php", { cache: "no-store" });
+                const result = await response.json();
+                if (!response.ok || !result.success) throw new Error(result.message || "Data tidak dapat dimuat.");
+                renderDashboardData(result);
+            } catch (error) {
+                clearDashboardData("Login diperlukan");
+            }
+        }
+
         let loggedIn = false;
+        let currentUser = null;
 
         async function isLoggedIn() {
             const response = await fetch("api/session.php");
             const result = await response.json();
             loggedIn = result.authenticated === true;
+            currentUser = loggedIn ? result.user : null;
             return loggedIn;
         }
 
         async function renderAuthArea() {
             const authenticated = await isLoggedIn();
             if (authenticated) {
+                const name = currentUser?.name || "Pengguna";
+                const role = currentUser?.role === "super_admin" ? "Super Admin" : "Admin Cabang";
                 accountLink.href = "#";
                 accountLinkText.textContent = "Akun Saya";
                 authArea.innerHTML = `
                     <div class="admin">
                         <div class="avatar"><i class="fa-solid fa-user"></i></div>
                         <div class="admin-info">
-                            <strong>Admin Pusat</strong>
-                            <span>Super Admin</span>
+                            <strong>${escapeHtml(name)}</strong>
+                            <span>${escapeHtml(role)}</span>
                         </div>
                         <i class="fa-solid fa-chevron-down admin-chevron"></i>
                     </div>
@@ -1202,12 +1293,13 @@
             }
         }
         renderAuthArea();
+        loadDashboardData();
 
         // Menu Akun membawa pengguna yang belum login ke halaman login.
         accountLink.addEventListener("click", function(event) {
             if (loggedIn) {
                 event.preventDefault();
-                alert("Anda sedang login sebagai Admin Pusat.");
+                alert("Anda sedang login sebagai " + (currentUser?.name || "pengguna") + ".");
             }
         });
 
@@ -1216,7 +1308,7 @@
             el.addEventListener("click", async function(e) {
                 if (!loggedIn) {
                     e.preventDefault();
-                    window.location.href = "Html/login.html?next=" + encodeURIComponent(window.location.href);
+                    window.location.href = "loading.html?next=" + encodeURIComponent("Html/login.html?next=" + encodeURIComponent(window.location.href));
                 }
                 // Jika sudah login, biarkan aksi default berjalan
             });

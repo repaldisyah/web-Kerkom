@@ -15,7 +15,7 @@ if ($username === '' || $password === '') {
     respond(['success' => false, 'message' => 'Username/email dan password wajib diisi.'], 422);
 }
 
-$statement = database()->prepare('SELECT id, name, username, email, password_hash, role FROM users WHERE username = :login OR email = :login LIMIT 1');
+$statement = database()->prepare('SELECT id, name, username, email, password_hash, role, branch_id FROM users WHERE username = :login OR email = :login LIMIT 1');
 $statement->execute(['login' => $username]);
 $user = $statement->fetch();
 
@@ -27,5 +27,14 @@ session_regenerate_id(true);
 $_SESSION['user_id'] = (int) $user['id'];
 $_SESSION['user_name'] = $user['name'];
 $_SESSION['user_role'] = $user['role'];
+$_SESSION['user_branch_id'] = $user['branch_id'] === null ? null : (int) $user['branch_id'];
 
-respond(['success' => true, 'message' => 'Login berhasil.', 'user' => ['name' => $user['name'], 'role' => $user['role']]]);
+respond([
+    'success' => true,
+    'message' => 'Login berhasil.',
+    'user' => [
+        'name' => $user['name'],
+        'role' => $user['role'],
+        'branch_id' => $_SESSION['user_branch_id'],
+    ],
+]);

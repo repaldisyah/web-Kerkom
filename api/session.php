@@ -10,5 +10,9 @@ if (!isset($_SESSION['user_id'])) {
 respond([
     'success' => true,
     'authenticated' => true,
-    'user' => ['name' => $_SESSION['user_name'], 'role' => $_SESSION['user_role']],
+    'user' => [
+        'name' => $_SESSION['user_name'],
+        'role' => $_SESSION['user_role'],
+        'branch_id' => $_SESSION['user_branch_id'] ?? null,
+    ],
 ]);
