@@ -66,6 +66,8 @@ CREATE TABLE payments (
     receivable_id INT UNSIGNED NOT NULL,
     payment_date DATE NOT NULL,
     amount DECIMAL(15,2) NOT NULL,
+    payment_method ENUM('QRIS', 'BRI', 'BCA', 'SEABANK', 'PAYPAL') NOT NULL,
+    payment_token VARCHAR(24) NOT NULL UNIQUE,
     note VARCHAR(255) NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_payments_receivable FOREIGN KEY (receivable_id) REFERENCES receivables(id),

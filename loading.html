@@ -101,20 +101,6 @@
             animation: progress 1.9s cubic-bezier(.4, 0, .2, 1) forwards;
         }
 
-        .skip-button {
-            margin-top: 1.3rem;
-            border: 0;
-            padding: .55rem .9rem;
-            color: var(--blue);
-            background: transparent;
-            cursor: pointer;
-            font: inherit;
-            font-size: .78rem;
-            opacity: .75;
-        }
-
-        .skip-button:hover, .skip-button:focus-visible { opacity: 1; text-decoration: underline; }
-
         @keyframes appear { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes pulse { 50% { opacity: .45; } }
         @keyframes progress { to { width: 100%; } }
@@ -133,7 +119,6 @@
         <h1 class="loading-title">Nusa Karsa Event</h1>
         <p class="loading-text">Menyiapkan halaman...</p>
         <div class="progress" role="progressbar" aria-label="Memuat halaman"><span></span></div>
-        <button class="skip-button" id="skipLoading" type="button">Lewati</button>
     </main>
 
     <script>
@@ -157,10 +142,11 @@
         function continueToDestination() {
             if (redirected) return;
             redirected = true;
-            window.location.replace(destination);
+            const destinationUrl = new URL(destination, window.location.href);
+            destinationUrl.searchParams.set('loadingEntry', '1');
+            window.location.replace(destinationUrl.href);
         }
 
-        document.getElementById('skipLoading').addEventListener('click', continueToDestination);
         window.setTimeout(continueToDestination, 2000);
     </script>
 </body>

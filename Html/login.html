@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login Admin | Nusa Karsa Event</title>
+    <script>
+        if (window.location.protocol === "file:") {
+            window.location.replace("http://localhost/web-Kerkom/Html/login.html");
+        }
+    </script>
 
     <!-- Fonts & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -370,8 +375,19 @@
                 if (!response.ok || !result.success) throw new Error(result.message || 'Login gagal.');
 
                 const next = new URLSearchParams(window.location.search).get('next');
-                const destination = next || 'halaman.html';
-                window.location.href = '../loading.html?next=' + encodeURIComponent(destination);
+                const defaultDestination = new URL('../halaman.html', window.location.href);
+                let destination = defaultDestination;
+
+                if (next) {
+                    const candidate = new URL(next, window.location.href);
+                    if (candidate.origin === window.location.origin && !/loading\.html$/i.test(candidate.pathname)) {
+                        destination = candidate;
+                    }
+                }
+
+                const loadingUrl = new URL('../loading.html', window.location.href);
+                loadingUrl.searchParams.set('next', destination.href);
+                window.location.href = loadingUrl.href;
             } catch (error) {
                 alert(error.message || 'Tidak dapat menghubungi server.');
                 button.disabled = false;

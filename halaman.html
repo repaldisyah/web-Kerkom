@@ -5,6 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Piutang | Nusa Karsa Event</title>
 
+    <script>
+        if (window.location.protocol === "file:") {
+            window.location.replace("http://localhost/web-Kerkom/halaman.html");
+        }
+        const loadingEntry = new URLSearchParams(window.location.search).get("loadingEntry");
+        if (loadingEntry !== "1") {
+            const loadingUrl = new URL("loading.html", window.location.href);
+            loadingUrl.searchParams.set("next", window.location.href);
+            window.location.replace(loadingUrl.href);
+        } else {
+            const cleanUrl = new URL(window.location.href);
+            cleanUrl.searchParams.delete("loadingEntry");
+            window.history.replaceState({}, document.title, cleanUrl.href);
+        }
+    </script>
+
         <!-- Logo kecil pada tab browser -->
     <link rel="icon" type="image/png" href="assets/logo2.0.png">
     <link rel="shortcut icon" href="assets/logo.png">
@@ -1118,7 +1134,7 @@
                 <i class="fa-solid fa-money-bill-transfer"></i>
                 <span>Piutang</span>
             </a>
-            <a href="#" class="nav-item">
+            <a href="Html/pembayaran.html" class="nav-item">
                 <i class="fa-regular fa-credit-card"></i>
                 <span>Pembayaran</span>
             </a>
@@ -1397,15 +1413,20 @@
         updateClock();
         setInterval(updateClock, 1000);
 
+        function navigateThroughLoading(destination) {
+            window.location.href = "loading.html?next=" + encodeURIComponent(destination.href);
+        }
+
         document.addEventListener("click", function(event) {
             const link = event.target.closest("a[href]");
-            if (!link || link.target === "_blank" || link.getAttribute("href") === "#") return;
+            if (!link || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+            if (link.target === "_blank" || link.hasAttribute("download") || link.getAttribute("href") === "#") return;
 
             const destination = new URL(link.href, window.location.href);
-            if (destination.origin !== window.location.origin || /loading\.html$/i.test(destination.pathname)) return;
+            if (destination.origin !== window.location.origin || /loading\.html$/i.test(destination.pathname) || destination.href === window.location.href) return;
 
             event.preventDefault();
-            window.location.href = "loading.html?next=" + encodeURIComponent(destination.href);
+            navigateThroughLoading(destination);
         });
 
         // Efek aktif pada menu
@@ -1542,7 +1563,7 @@
                     try {
                         await fetch("api/logout.php", { method: "POST" });
                     } finally {
-                        window.location.reload();
+                        navigateThroughLoading(new URL("halaman.html", window.location.href));
                     }
                 });
             } else {
@@ -1557,14 +1578,16 @@
         }
         document.querySelector(".sidebar-bottom .logout").addEventListener("click", async function() {
             if (!loggedIn) {
-                window.location.href = "Html/login.html?next=" + encodeURIComponent(window.location.href);
+                const destination = new URL("Html/login.html", window.location.href);
+                destination.searchParams.set("next", window.location.href);
+                navigateThroughLoading(destination);
                 return;
             }
 
             try {
                 await fetch("api/logout.php", { method: "POST" });
             } finally {
-                window.location.reload();
+                navigateThroughLoading(new URL("halaman.html", window.location.href));
             }
         });
 
@@ -1584,7 +1607,9 @@
             el.addEventListener("click", async function(e) {
                 if (!loggedIn) {
                     e.preventDefault();
-                    window.location.href = "loading.html?next=" + encodeURIComponent("Html/login.html?next=" + encodeURIComponent(window.location.href));
+                    const destination = new URL("Html/login.html", window.location.href);
+                    destination.searchParams.set("next", window.location.href);
+                    navigateThroughLoading(destination);
                 }
                 // Jika sudah login, biarkan aksi default berjalan
             });
