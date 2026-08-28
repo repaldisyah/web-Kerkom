@@ -1,0 +1,10 @@
+Options -Indexes
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^(?:database|\.git)(?:/|$) - [F,L,NC]
+</IfModule>
+
+<FilesMatch "^(?:config\.php|\.env)$">
+    Require all denied
+</FilesMatch>

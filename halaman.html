@@ -23,7 +23,7 @@
 
         <!-- Logo kecil pada tab browser -->
     <link rel="icon" type="image/png" href="assets/logo2.0.png">
-    <link rel="shortcut icon" href="assets/logo.png">
+    <link rel="shortcut icon" href="assets/logo2.0.png">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
@@ -52,6 +52,35 @@
             --white: #ffffff;
             --shadow: 0 10px 28px rgba(25, 52, 82, .09);
         }
+
+        .branch-warp {
+            position: fixed;
+            inset: 0;
+            z-index: 999;
+            pointer-events: none;
+            opacity: 0;
+            background: var(--navy);
+        }
+
+        .branch-warp::before,
+        .branch-warp::after {
+            content: "";
+            position: absolute;
+            top: -20%;
+            width: 2px;
+            height: 140%;
+            background: var(--cyan);
+            transform: scaleY(0);
+        }
+
+        .branch-warp::before { left: 35%; }
+        .branch-warp::after { left: 65%; background: var(--gold); }
+        body.is-branch-warping .branch-warp { opacity: 1; animation: branchWarpFade .55s ease forwards; }
+        body.is-branch-warping .branch-warp::before,
+        body.is-branch-warping .branch-warp::after { animation: branchWarpLine .55s cubic-bezier(.2,.8,.2,1) forwards; }
+
+        @keyframes branchWarpFade { 0% { opacity: 0; } 35% { opacity: 1; } 100% { opacity: 0; } }
+        @keyframes branchWarpLine { 0% { transform: scaleY(0); } 45% { transform: scaleY(1); } 100% { transform: translateX(-28vw) scaleY(0); } }
 
         * {
             box-sizing: border-box;
@@ -1097,9 +1126,12 @@
         }
 
     </style>
+    <link rel="stylesheet" href="Css/navigation.css">
 </head>
 
 <body>
+
+    <div class="branch-warp" aria-hidden="true"></div>
 
     <!-- ================= SIDEBAR ================= -->
     <aside class="sidebar">
@@ -1118,19 +1150,19 @@
                 <i class="fa-regular fa-user"></i>
                 <span id="accountLinkText">Login Admin</span>
             </a>
-            <a href="#" class="nav-item">
+            <a href="Html/cabang.html" class="nav-item">
                 <i class="fa-solid fa-code-branch"></i>
                 <span>Cabang</span>
             </a>
-            <a href="#" class="nav-item">
+            <a href="Html/pelanggan.html" class="nav-item">
                 <i class="fa-solid fa-users"></i>
                 <span>Pelanggan</span>
             </a>
-            <a href="#" class="nav-item">
+            <a href="Html/history.html" class="nav-item">
                 <i class="fa-regular fa-calendar-days"></i>
-                <span>Event</span>
+                <span>Riwayat</span>
             </a>
-            <a href="#" class="nav-item">
+            <a href="Html/pembayaran.html" class="nav-item">
                 <i class="fa-solid fa-money-bill-transfer"></i>
                 <span>Piutang</span>
             </a>
@@ -1138,7 +1170,7 @@
                 <i class="fa-regular fa-credit-card"></i>
                 <span>Pembayaran</span>
             </a>
-            <a href="#" class="nav-item">
+            <a href="Html/laporan.html" class="nav-item">
                 <i class="fa-solid fa-chart-column"></i>
                 <span>Laporan</span>
             </a>
@@ -1425,6 +1457,14 @@
             const destination = new URL(link.href, window.location.href);
             if (destination.origin !== window.location.origin || /loading\.html$/i.test(destination.pathname) || destination.href === window.location.href) return;
 
+            if (/\/cabang\.html$/i.test(destination.pathname)) {
+                event.preventDefault();
+                document.body.classList.add("is-branch-warping");
+                destination.searchParams.set("loadingEntry", "1");
+                window.setTimeout(() => { window.location.href = destination.href; }, 360);
+                return;
+            }
+
             event.preventDefault();
             navigateThroughLoading(destination);
         });
@@ -1612,6 +1652,17 @@
                     navigateThroughLoading(destination);
                 }
                 // Jika sudah login, biarkan aksi default berjalan
+            });
+        });
+
+        document.querySelectorAll(".nav-menu a[href]").forEach(link => {
+            if (link.id === "accountLink") return;
+            link.addEventListener("click", function(event) {
+                if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+                const destination = new URL(link.href, window.location.href);
+                if (destination.origin !== window.location.origin || destination.href === window.location.href) return;
+                event.preventDefault();
+                navigateThroughLoading(destination);
             });
         });
     </script>

@@ -60,3 +60,56 @@ function require_login(): int
     }
     return (int) $userId;
 }
+
+function current_scope(): array
+{
+    $userId = require_login();
+    $role = (string) ($_SESSION['user_role'] ?? '');
+    $allowedRoles = ['super_admin', 'admin_cabang', 'pelanggan'];
+    if (!in_array($role, $allowedRoles, true)) {
+        respond(['success' => false, 'message' => 'Peran akun tidak valid.'], 403);
+    }
+
+    return [
+        'user_id' => $userId,
+        'role' => $role,
+        'branch_id' => isset($_SESSION['user_branch_id']) ? (int) $_SESSION['user_branch_id'] : null,
+        'customer_id' => isset($_SESSION['user_customer_id']) ? (int) $_SESSION['user_customer_id'] : null,
+    ];
+}
+
+function has_customer_account_column(): bool
+{
+    static $exists = null;
+    if (is_bool($exists)) return $exists;
+    $statement = database()->query("SHOW COLUMNS FROM users LIKE 'customer_id'");
+    $exists = (bool) $statement->fetch();
+    return $exists;
+}
+
+function has_payment_token_column(): bool
+{
+    static $exists = null;
+    if (is_bool($exists)) return $exists;
+    $statement = database()->query("SHOW COLUMNS FROM payments LIKE 'payment_token'");
+    $exists = (bool) $statement->fetch();
+    return $exists;
+}
+
+function has_payment_method_column(): bool
+{
+    static $exists = null;
+    if (is_bool($exists)) return $exists;
+    $statement = database()->query("SHOW COLUMNS FROM payments LIKE 'payment_method'");
+    $exists = (bool) $statement->fetch();
+    return $exists;
+}
+
+function has_payment_note_column(): bool
+{
+    static $exists = null;
+    if (is_bool($exists)) return $exists;
+    $statement = database()->query("SHOW COLUMNS FROM payments LIKE 'note'");
+    $exists = (bool) $statement->fetch();
+    return $exists;
+}

@@ -7,8 +7,9 @@ CREATE TABLE users (
     username VARCHAR(50) NOT NULL UNIQUE,
     email VARCHAR(150) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
-    role ENUM('super_admin', 'admin_cabang') NOT NULL DEFAULT 'admin_cabang',
+    role ENUM('super_admin', 'admin_cabang', 'pelanggan') NOT NULL DEFAULT 'admin_cabang',
     branch_id INT UNSIGNED NULL,
+    customer_id INT UNSIGNED NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
@@ -32,6 +33,9 @@ CREATE TABLE customers (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_customers_branch FOREIGN KEY (branch_id) REFERENCES branches(id)
 ) ENGINE=InnoDB;
+
+ALTER TABLE users
+    ADD CONSTRAINT fk_users_customer FOREIGN KEY (customer_id) REFERENCES customers(id);
 
 CREATE TABLE events (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,

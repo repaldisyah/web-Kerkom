@@ -14,5 +14,6 @@ respond([
         'name' => $_SESSION['user_name'],
         'role' => $_SESSION['user_role'],
         'branch_id' => $_SESSION['user_branch_id'] ?? null,
+        'customer_id' => $_SESSION['user_customer_id'] ?? null,
     ],
 ]);
